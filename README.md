@@ -1,85 +1,96 @@
 <div align="center">
+<img src="https://capsule-render.vercel.app/api?type=slice&color=0:001233,100:023e8a&height=120&text=📡%20NetSentinel&fontSize=40&fontColor=00b4d8&fontAlignY=70&rotate=-5" width="100%"/>
 
-<img src="https://capsule-render.vercel.app/api?type=rect&color=gradient&customColorList=6&height=80&text=📡%20NetSentinel&fontSize=34&fontColor=ffffff" width="100%"/>
+<br/>
 
-[![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![Network](https://img.shields.io/badge/Network-Analysis-blue?style=for-the-badge)]()
-[![IDS](https://img.shields.io/badge/IDS-Anomaly%20Detection-purple?style=for-the-badge)]()
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+> *"Every packet tells a story. NetSentinel reads them all."*
 
-**Real-time network traffic analyzer and anomaly detection system.**  
-Captures raw packets, identifies threats (port scans, SYN floods, C2 traffic, DNS exfiltration) and generates detailed reports — with a **demo mode that needs no root access**.
+[![Live Detection](https://img.shields.io/badge/⚡_LIVE_DETECTION-00b4d8?style=for-the-badge)]()
+[![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)]()
+[![No Root Demo](https://img.shields.io/badge/Demo_Mode-No_Root_Needed-90e0ef?style=for-the-badge)]()
+[![IDS](https://img.shields.io/badge/7_Threat_Rules-023e8a?style=for-the-badge)]()
 
 </div>
 
 ---
 
-## ✨ Detection Rules
+## 🛰️ What It Detects — In Real Time
 
-| Threat | Detection Method | Severity |
-|---|---|---|
-| 🔍 **Port Scan** | 15+ distinct ports from one IP in 10s | HIGH |
-| 🌊 **SYN Flood** | 100+ SYN packets from one IP in 10s | CRITICAL |
-| 🧬 **DNS Exfiltration** | 30+ DNS queries from one IP in 10s | HIGH |
-| 💥 **ICMP Flood** | 50+ ICMP packets from one IP in 10s | HIGH |
-| 👾 **C2 / Backdoor** | Traffic on ports 4444, 31337, 1337, etc. | HIGH |
-| 🔓 **Cleartext Creds** | FTP/Telnet/POP3/IMAP sessions detected | MEDIUM |
-| 📦 **Large Payload** | Packets >65KB | MEDIUM |
+```
+12:34:57  TCP  10.0.0.99 ──────────────────→ 192.168.1.1:22  [SYN]  60B
+12:34:57  TCP  10.0.0.99 ──────────────────→ 192.168.1.1:80  [SYN]  60B
+12:34:57  TCP  10.0.0.99 ──────────────────→ 192.168.1.1:443 [SYN]  60B
+          ... 13 more ports ...
+
+  ╔══════════════════════════════════════════════════════╗
+  ║  🔴 [HIGH] PORT_SCAN                                 ║
+  ║  10.0.0.99 scanned 16 distinct ports in 10s         ║
+  ║  Ports: [21,22,80,443,3306,5432,8080,8443,9200...]  ║
+  ╚══════════════════════════════════════════════════════╝
+
+12:34:58  TCP  172.16.0.1 ─────────────────→ 192.168.1.1:80  [SYN]  (×102)
+
+  ╔══════════════════════════════════════════════════════╗
+  ║  🚨 [CRITICAL] SYN_FLOOD                            ║
+  ║  172.16.0.1 → 102 SYN packets in 10 seconds        ║
+  ╚══════════════════════════════════════════════════════╝
+```
 
 ---
 
-## 🚀 Quick Start
+## 🧠 Detection Engine
+
+| Rule | Trigger | Severity |
+|---|---|---|
+| `PORT_SCAN` | 15+ distinct ports from one IP / 10s | 🔴 HIGH |
+| `SYN_FLOOD` | 100+ SYN packets from one IP / 10s | 🚨 CRITICAL |
+| `DNS_EXFILTRATION` | 30+ DNS queries from one IP / 10s | 🔴 HIGH |
+| `ICMP_FLOOD` | 50+ ICMP packets from one IP / 10s | 🔴 HIGH |
+| `SUSPICIOUS_PORT` | Traffic on 4444, 31337, 1337, 6969… | 🔴 HIGH |
+| `CLEARTEXT_CREDS` | FTP / Telnet / POP3 / IMAP session | 🟡 MEDIUM |
+| `LARGE_PAYLOAD` | Single packet > 65 KB | 🟡 MEDIUM |
+
+---
+
+## ⚡ Quick Start
 
 ```bash
-git clone https://github.com/SRINIVASAN55/NetSentinel.git
+git clone https://github.com/SRINIVASAN55/NetSentinel
 cd NetSentinel
 
-# Demo mode — no root, no install needed
+# ── Demo mode (no sudo, no install needed) ──────────────
 python netsentinel.py --demo -d 30
 
-# Live capture (requires root on Linux)
-sudo python netsentinel.py -i eth0 -d 60
+# ── Live capture on eth0 (Linux, requires sudo) ─────────
+sudo python netsentinel.py -i eth0 -d 120
 
-# Capture and save report
-sudo python netsentinel.py -i eth0 -d 120 -o report.json
+# ── Save JSON report ────────────────────────────────────
+sudo python netsentinel.py -i eth0 -d 60 -o report.json
 ```
 
 ---
 
-## 📋 CLI Options
+## 📊 Traffic Stats Dashboard
 
 ```
-  -i INTERFACE  --interface   Network interface (e.g. eth0, wlan0)
-  -d DURATION   --duration    Capture duration in seconds (default: 30, 0=infinite)
-  -o OUTPUT     --output      JSON report output path
-  --demo                      Run in demo/simulation mode (no root needed)
-```
-
----
-
-## 📊 Sample Output
-
-```
-[*] Capturing on eth0...
-
-  12:34:56.123  TCP    192.168.1.5        → 8.8.8.8:443/HTTPS [SYN] (64B)
-  12:34:56.456  UDP    192.168.1.5        → 8.8.8.8:53/DNS (100B)
-  12:34:57.001  TCP    10.0.0.99          → 192.168.1.1:22/SSH [SYN] (60B)
-
-  [ALERT][12:34:57][HIGH] PORT_SCAN: 10.0.0.99 scanned 16 ports
-    Detail: [21, 22, 80, 443, 3306, 5432, 8080, 8443, 9200, 6379...]
-
-  [ALERT][12:34:58][CRITICAL] SYN_FLOOD: 172.16.0.1 sent 102 SYNs/10s
-
-─────────────────────────────────────
   Protocol Distribution:
-    TCP      1,204  ████████████████████
-    UDP        389  ██████
-    ICMP        47  █
+    TCP      1,847  ████████████████████████
+    UDP        423  █████
+    ICMP        89  █
+
+  Top Talkers:
+    192.168.1.5     612 packets
+    10.0.0.99       289 packets   ← suspicious
+
+  Top Ports:
+    443    HTTPS     891 connections
+    53     DNS       210 connections
+    4444   ???         3 connections  ⚠
 ```
 
 ---
 
-## 📄 License
-
-MIT License © 2024 [Srinivasan S](https://github.com/SRINIVASAN55)
+<p align="center">
+  Built by <a href="https://github.com/SRINIVASAN55">SRINIVASAN55</a> ·
+  <a href="https://linkedin.com/in/srinivasan132">LinkedIn</a>
+</p>
