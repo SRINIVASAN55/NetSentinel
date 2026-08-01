@@ -1,0 +1,3 @@
+# NetSentinel uses Python stdlib only for core functionality
+# Optional: install scapy for enhanced packet capture
+scapy>=2.5.0
