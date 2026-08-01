@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.env
+venv/
+netsentinel_report_*.json
+*.pcap
+*.log
+.DS_Store
