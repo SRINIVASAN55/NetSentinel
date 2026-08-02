@@ -1,96 +1,68 @@
-<div align="center">
-<img src="https://capsule-render.vercel.app/api?type=slice&color=0:001233,100:023e8a&height=120&text=📡%20NetSentinel&fontSize=40&fontColor=00b4d8&fontAlignY=70&rotate=-5" width="100%"/>
+# NetSentinel
 
-<br/>
-
-> *"Every packet tells a story. NetSentinel reads them all."*
-
-[![Live Detection](https://img.shields.io/badge/⚡_LIVE_DETECTION-00b4d8?style=for-the-badge)]()
-[![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)]()
-[![No Root Demo](https://img.shields.io/badge/Demo_Mode-No_Root_Needed-90e0ef?style=for-the-badge)]()
-[![IDS](https://img.shields.io/badge/7_Threat_Rules-023e8a?style=for-the-badge)]()
-
-</div>
+*Packet-level network intrusion detection. No agents. No cloud.*
 
 ---
 
-## 🛰️ What It Detects — In Real Time
+You plug it in. It watches. It tells you what's wrong.
 
-```
-12:34:57  TCP  10.0.0.99 ──────────────────→ 192.168.1.1:22  [SYN]  60B
-12:34:57  TCP  10.0.0.99 ──────────────────→ 192.168.1.1:80  [SYN]  60B
-12:34:57  TCP  10.0.0.99 ──────────────────→ 192.168.1.1:443 [SYN]  60B
-          ... 13 more ports ...
+NetSentinel captures live traffic and runs it through 7 detection rules — port scanning, ARP spoofing, DNS tunneling, SYN floods, unusual payloads, lateral movement, and C2 beaconing. When something matches, you get an alert with the packet context and a suggested response.
 
-  ╔══════════════════════════════════════════════════════╗
-  ║  🔴 [HIGH] PORT_SCAN                                 ║
-  ║  10.0.0.99 scanned 16 distinct ports in 10s         ║
-  ║  Ports: [21,22,80,443,3306,5432,8080,8443,9200...]  ║
-  ╚══════════════════════════════════════════════════════╝
+No root? No problem. Run `--demo` and it simulates a real attack scenario so you can evaluate it before deployment.
 
-12:34:58  TCP  172.16.0.1 ─────────────────→ 192.168.1.1:80  [SYN]  (×102)
+---
 
-  ╔══════════════════════════════════════════════════════╗
-  ║  🚨 [CRITICAL] SYN_FLOOD                            ║
-  ║  172.16.0.1 → 102 SYN packets in 10 seconds        ║
-  ╚══════════════════════════════════════════════════════╝
+**Detection rules**
+
+```python
+RULES = [
+    "port_scan",          # >15 unique ports from single source in 60s
+    "arp_spoof",          # ARP reply without prior request
+    "dns_tunnel",         # payload size > threshold or high-entropy subdomain
+    "syn_flood",          # SYN:ACK ratio > 10:1 from single IP
+    "payload_anomaly",    # known-bad byte signatures in stream
+    "lateral_movement",   # internal SMB/RDP to multiple hosts
+    "c2_beacon",          # periodic outbound at fixed intervals
+]
 ```
 
 ---
 
-## 🧠 Detection Engine
-
-| Rule | Trigger | Severity |
-|---|---|---|
-| `PORT_SCAN` | 15+ distinct ports from one IP / 10s | 🔴 HIGH |
-| `SYN_FLOOD` | 100+ SYN packets from one IP / 10s | 🚨 CRITICAL |
-| `DNS_EXFILTRATION` | 30+ DNS queries from one IP / 10s | 🔴 HIGH |
-| `ICMP_FLOOD` | 50+ ICMP packets from one IP / 10s | 🔴 HIGH |
-| `SUSPICIOUS_PORT` | Traffic on 4444, 31337, 1337, 6969… | 🔴 HIGH |
-| `CLEARTEXT_CREDS` | FTP / Telnet / POP3 / IMAP session | 🟡 MEDIUM |
-| `LARGE_PAYLOAD` | Single packet > 65 KB | 🟡 MEDIUM |
-
----
-
-## ⚡ Quick Start
+**Running it**
 
 ```bash
-git clone https://github.com/SRINIVASAN55/NetSentinel
-cd NetSentinel
+# Live capture (needs root or cap_net_raw)
+sudo python netsentinel.py --interface eth0
 
-# ── Demo mode (no sudo, no install needed) ──────────────
-python netsentinel.py --demo -d 30
+# Demo mode — no root needed, simulates attack traffic
+python netsentinel.py --demo
 
-# ── Live capture on eth0 (Linux, requires sudo) ─────────
-sudo python netsentinel.py -i eth0 -d 120
+# Alert on specific threats only
+python netsentinel.py --rules port_scan,c2_beacon --interface eth0
 
-# ── Save JSON report ────────────────────────────────────
-sudo python netsentinel.py -i eth0 -d 60 -o report.json
+# Write alerts to file
+python netsentinel.py --interface eth0 --log alerts.jsonl
 ```
 
 ---
 
-## 📊 Traffic Stats Dashboard
+**Output**
 
 ```
-  Protocol Distribution:
-    TCP      1,847  ████████████████████████
-    UDP        423  █████
-    ICMP        89  █
-
-  Top Talkers:
-    192.168.1.5     612 packets
-    10.0.0.99       289 packets   ← suspicious
-
-  Top Ports:
-    443    HTTPS     891 connections
-    53     DNS       210 connections
-    4444   ???         3 connections  ⚠
+[14:23:01] ⚠  PORT SCAN      src=192.168.1.105  ports=22,23,80,443,3389,8080…(+11)
+[14:23:04] 🔴 SYN FLOOD      src=10.0.0.44      pps=8,400  target=10.0.0.1:80
+[14:24:17] ⚠  DNS TUNNEL     src=10.0.0.12      query=aGVsbG8=.evil.io (high entropy)
+[14:25:33] 🔴 C2 BEACON      dst=185.220.101.45 interval=240s±2s  (99.1% periodic)
 ```
 
 ---
 
-<p align="center">
-  Built by <a href="https://github.com/SRINIVASAN55">SRINIVASAN55</a> ·
-  <a href="https://linkedin.com/in/srinivasan132">LinkedIn</a>
-</p>
+**Requirements**
+
+- Python 3.8+
+- `scapy` for live capture
+- Nothing else
+
+---
+
+Made by [S. Srinivasan](https://github.com/SRINIVASAN55)
