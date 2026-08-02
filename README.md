@@ -1,5 +1,9 @@
 # NetSentinel
 
+![CI](https://github.com/SRINIVASAN55/NetSentinel/actions/workflows/ci.yml/badge.svg) ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg) ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
+
+
+
 *Packet-level network intrusion detection. No agents. No cloud.*
 
 ---
